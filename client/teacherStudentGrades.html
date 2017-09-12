@@ -1,0 +1,70 @@
+<head>
+  <title>Linux Skills Quiz</title>
+</head>
+
+<!-- container for bootstrap -->
+<div class="container" style="width:100%;">
+  <!-- centered div -->
+  <div class="centeredBoxFull">
+    
+    <!-- button that goes to home page -->
+    <button class="blueButton roundButton" style="float:right;margin-top:10px;" ng-click="homeButton()">Home</button>
+    
+    <!-- dropdown to choose student -->
+    <h1 id="reportGrade">Reports</h1>
+    <select id="studentDropdown" ng-model="studentID" ng-change="updateStudent()">
+      <option ng-repeat="student in studentsWithQuizzes" value="{{student._id}}">{{student.firstName}} {{student.lastName}}</option>
+      <!--<option value="Bob" selected>Bob</option>-->
+    </select>
+    
+    <hr>
+    
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- title for main box -->
+        <div id="reportName" class="quizReportTitleBox">
+          {{student.firstName}} {{student.lastName}}'s Reports
+        </div>
+        
+        <div class="quizReportBox">
+          <!-- table with all of quiz reports -->
+          <table class="reportTable">
+            <tr>
+              <th>Date
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByDate()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Grade
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByGrade()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Performance</th>
+              <th>View Report</th>
+            </tr>
+            <tr ng-repeat="quiz in student.quizzes | orderBy: orderByValue">
+              <td>{{quiz.dateObject | date}}</td>
+              <td>{{quiz.grade}}%</td>
+              <td>
+                <div class="ratioVisualFull">
+                  <div class="ratioVisual {{quiz.gradeColor}} progress-bar-striped"
+                       style="width:{{quiz.grade}}%">
+                  </div>
+                </div>
+                <img src="{{quiz.icon}}" class="progressIcon" />
+              </td>
+              <td><a href="#!/report/{{student._id}}/{{quiz._id}}" class="reportLink">report</a></td>
+            </tr> 
+          </table>
+          
+          <!-- students average grade -->
+          <h2 id="studentsAvg" 
+              style="text-align: right;padding:10px;">Avg: {{student.averageGrade}}%</h2>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>

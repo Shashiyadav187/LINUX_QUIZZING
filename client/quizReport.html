@@ -1,0 +1,82 @@
+<head>
+    <title>Linux Skills Quiz</title>
+</head>
+
+    <!-- container for bootstrap -->
+    <div class="container" style="width:100%;">
+        
+        <!-- white opaque box centered horizontally and vertically -->
+        <div class="centeredBoxFull">
+            
+            <!-- buttons for home page and to retake quiz -->
+            <button class="blueButton roundButton" 
+                    style="float:right;margin-top:10px;" ng-click="homeButton()">Home</button>
+            <button class="greenButton roundButton" 
+                    style="float:right;margin-top:10px;" ng-hide="visibility" ng-click="retakeQuizButton()">Retake Quiz</button>
+            
+            <!-- header with grade -->
+            <h1 id="reportGrade">Report - {{grade}}%</h1>
+
+            <hr>
+            
+            <div class="ratioVisualFull" style="height:40px;width:100%;background-color:lightgray;">
+                <div class="ratioVisual greenColor progress-bar-striped"
+                     style="width:{{grade}}%;height:40px;">
+                </div>
+            </div>
+            
+            <br><br><br>
+
+
+            <div class="row">
+                <div class="col-sm-6">
+                    
+                    <!-- top box of the correct column -->
+                    <div class="quizReportTitleBox">
+                        Correct
+                    </div>
+                    
+                    <!-- questions answered correctly -->
+                    <div class="quizReportBox">
+                        <table class="reportTable">
+                            <tr>
+                                <th>Question (Hover over for details)</th>
+                                <th>Correct Answer</th>
+                            </tr>
+                            <tr ng-repeat="question in questions | filter:{usrCorrect:true}">
+                                <td><p data-toggle="tooltip" title="{{question.description}}">{{question.questionName}}</p></td>
+                                <td>{{question.actualCrtAnswer}}</td>
+                            </tr>
+                        </table>
+                        <br>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    
+                    <!-- top box of the incorrect column -->
+                    <div class="quizReportTitleBox">
+                        Incorrect
+                    </div>
+                    
+                    <!-- questions answered incorrectly -->
+                    <div class="quizReportBox">
+                        <table class="reportTable">
+                            <tr>
+                                <th>Question (Hover over for details)</th>
+                                <th>Your Answer</th>
+                                <th>Correct Answer</th>
+                            </tr>
+			    <tr ng-repeat="question in questions | filter:{usrCorrect:false}">
+                                <td><p data-toggle="tooltip" title="{{question.description}}">{{question.questionName}}</p></td>
+				<td>{{question.usrAnswer}}</td>
+                                <td>{{question.actualCrtAnswer}}</td>
+                            </tr>
+                        </table>
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>

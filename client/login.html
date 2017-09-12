@@ -1,0 +1,40 @@
+
+
+
+
+    <!-- white opaque div centered horizontally and vertically -->
+    <div class="centeredBox">
+        
+      <div class = "alert alert-danger" ng-hide="visibility">
+	{{warning}}
+      </div>
+
+
+        <!-- greeting for login form -->
+        <h1>Linux Quiz</h1>
+        <p>Testing your linux knowledge one command at a time!</p>
+        <p>Login:</p>
+        
+        <!-- form that handles logging in -->
+        <form>
+            
+            <!-- username image and username text field -->
+            <img class="textFieldImg" src="emailPic.png">
+            <input id="emailInput" class="textField" type="text" 
+                   name="email" placeholder="Email" ng-model="emailVal">
+            <br>
+            
+            <!-- password image and password text field -->
+            <img class="textFieldImg" src="passwordPic.png">
+            <input id="passwordInput" class="textField" type="password" 
+                   name="password" placeholder="Password" ng-model="passwdVal">
+            <br><br>
+        </form>
+        <br /><br />
+        
+        <!-- buttons to sign up and login -->
+        <button class="blueButton roundButton" ng-click="signupButton()">Sign Up</button>
+        <button class="greenButton roundButton" style="float:right;" ng-click="loginButton()">Login</button>
+        
+    </div>
+

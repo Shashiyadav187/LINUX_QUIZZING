@@ -1,0 +1,66 @@
+<head>
+  <title>Linux Skills Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<!-- bootstrap container -->
+<div class="container" style="width:100%;">
+  
+  <!-- white opaque box centered -->
+  <div class="centeredBoxFull">
+    
+    <!-- button to go to home page -->
+    <button class="blueButton roundButton" 
+            style="float:right;margin-top:10px;" ng-click="homeButton()">Home</button>
+    
+    <h1 id="reportGrade">Reports</h1>
+    
+    <hr>
+    
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- top of reports box -->
+        <div class="quizReportTitleBox">
+          My Reports
+        </div>
+        <div class="quizReportBox">
+          <!-- table with all of quiz reports -->
+          <table class="reportTable">
+            <tr>
+              <th>Date
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByDate()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Grade
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByGrade()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Performance</th>
+              <th>View Report</th>
+            </tr>
+            <tr ng-repeat="quiz in quizzes | orderBy: orderByValue">
+              <td>{{quiz.dateObject | date}}</td>
+              <td>{{quiz.grade}}%</td>
+              <td>
+                <div class="ratioVisualFull">
+                  <div class="ratioVisual {{quiz.gradeColor}} progress-bar-striped"
+                       style="width:{{quiz.grade}}%">
+                  </div>
+                </div>
+                <img src="{{quiz.icon}}" class="progressIcon" />
+              </td>
+              <td><a href="#!/report/{{quiz._id}}">report</a></td>
+            </tr> 
+          </table>
+          
+          <!-- students average grade -->
+          <h2 id="studentsAvg" 
+              style="text-align: right;padding:10px;">Avg: {{averageGrade}}%</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>

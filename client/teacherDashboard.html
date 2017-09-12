@@ -1,0 +1,119 @@
+<head>
+  <title>Linux Skills Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>	 
+<!-- bootstrap container -->
+<div class="container" style="width:100%;">
+
+  <!-- centered div -->
+  <div class="centeredBoxFull">
+    
+    <h1>Teacher Dashboard</h1>
+    
+    <ul class="nav nav-tabs">
+      <li class="active" ng-click="switchTabs1()"><a data-toggle="tab">Class Trends</a></li>
+      <li ng-click="switchTabs2()"><a data-toggle="tab" id="stuReports">Student Reports</a></li>
+    </ul>
+    
+    <div class="row" ng-hide="showClassTrends">
+      <div class="col-sm-12">
+        <!-- title of the main box -->
+        <div class="quizReportTitleBox">
+          Class Trends
+        </div>
+	
+        <!-- table that contains reports -->
+        <div class="quizReportBox">
+          <table class="reportTable">
+            <tr>
+              <th>Question</th>
+              <th>Correct Answer</th>
+              <th>Percentage
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByPerc()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Performance</th>
+            </tr>
+            <tr ng-repeat="question in questions | orderBy: orderByValue">
+              <td><p data-toggle="tooltip" title="{{question.description}}">{{question.questionName}}</p></td>
+              <td>{{question.crtAnswer}}</td>
+              <td>{{question.crtRatio}}%</td>
+              <td>
+                <div class="ratioVisualFull">
+                  <div class="ratioVisual {{question.gradeColor}} progress-bar-striped"
+                       style="width:{{question.crtRatio}}%">
+                  </div>
+                </div>
+                <img src="{{question.icon}}" class="progressIcon" />
+              </td>
+            </tr>
+          </table>
+	  
+          <!-- avg for the class -->
+          <h2 id="classAvg" style="text-align: right;padding:10px;"></h2>
+        </div>
+      </div>
+      
+    </div>
+    
+    
+    <div class="row" ng-hide="showStudentReports">
+      <div class="col-sm-12">
+        <!-- title for main box -->
+        <div class="quizReportTitleBox">
+          Student Reports
+        </div>
+	
+        <!-- table that contains reports -->
+        <div class="quizReportBox">
+          <table class="reportTable">
+            <tr>
+              <th>Name
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByName()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Date of Last Quiz
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByDate()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Avg Grade
+		<button type="button" class="btn btn-default btn-xs" ng-click="orderByGrade()">
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+		</button>
+	      </th>
+              <th>Performance</th>
+              <th>View Report</th>
+            </tr>
+            <tr ng-repeat="student in students | orderBy: oderByStudentValue">
+              <td>{{student.firstName}} {{student.lastName}}</td>
+              <td>{{student.dateObject | date}}</td>
+              <td>{{student.averageGrade}}%</td>
+              <td>
+                <div class="ratioVisualFull">
+                  <div class="ratioVisual {{student.gradeColor}} progress-bar-striped"
+                       style="width:{{student.averageGrade}}%">
+                  </div>
+                </div>
+                <img src="{{student.icon}}" class="progressIcon" />
+              </td>
+              <td><a href="#!/studentGrades/{{student._id}}" class="reportLink">report</a></td>
+            </tr>
+          </table>
+          <!-- class average -->
+          <h2 id="classAvg" 
+              style="text-align: right;padding:10px;">Class Avg: {{averageGrade}}%</h2>
+        </div>
+	<div>
+	  <svg width="700" height="400" style="position:relative;left:30%;"></svg>
+	  </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  
+</div>
+  

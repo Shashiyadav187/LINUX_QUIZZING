@@ -1,0 +1,71 @@
+    <head>
+        <title>Linux Skills Quiz</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+
+        <!-- white opaque div centered vertically and horizontally -->
+        <div class="centeredBoxFull quizBox">
+            <!-- timer: class determines the color 
+                    (littleTime = red; normalTime = blue) 
+            -->
+            <!--<p id="timer" class="normalTime">00:59</p>-->
+            
+            <!-- name of the question and the question -->
+            <h1 id="questionName">{{questionName}}</h1>
+            <p id="question">{{description}}</p>
+             
+            <hr>
+            
+            <!-- container for bootstrap -->
+            <div class="container" style="width:100%;">
+                <div class="row">
+                    <div class="col-sm-12">
+                      <div class = "alert alert-success" ng-hide="correctVisibility">
+			{{responseText}}
+		      </div>
+                      <div class = "alert alert-danger fade in" ng-hide="warnVisibility">
+			{{responseText}}
+		      </div>
+                      <div class = "alert alert-danger" ng-hide="warnAnswer">
+			You must answer the question
+		      </div>
+
+
+
+                        <!-- top box of the terminal with the title -->
+                        <div id="terminalTitleBox">
+                            Terminal
+                        </div>
+                        
+                        <!-- content of the terminal -->
+                        <div id="terminalBox">
+                            <p>Press enter to submit commands...</p><br>
+                            
+                            <!-- textarea where commands are entered -->
+                            <span>user@centre></span><textarea ng-keypress="keyPress($event)"
+                                            rows="8" maxlength="250" autofocus="true"
+                                            id="commandText" type="text" ng-model="userAnswer" 
+					    ng-readonly="readonly"></textarea>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- number of the question above the progress bar -->
+                <p id="progressBarText">Question {{number}} of {{maxQuest}}</p>
+                
+                <!-- progress bar -->
+                <div id="progressBarFull">
+                    <div id="progressBar" class="progress-bar-striped"
+                         style="width: {{progress}};"></div>
+                </div>
+                
+            </div>
+            <br />
+            
+            <!-- button to go to next question -->
+            <button class="greenButton roundButton" 
+                    style="float:right;" ng-click="nextButton()">Next >>></button>
+
+        </div>

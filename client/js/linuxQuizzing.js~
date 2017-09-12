@@ -1,0 +1,582 @@
+( function()
+{
+    angular.module("linuxQuiz",['ngRoute']);
+    
+    var linuxQuizModel = function($http)
+    {
+	
+	var confirmIdentity=function(email,password)
+	{
+		console.log("in confirm identity");
+	    var data={
+		"email":email,
+		"password":password
+	    }
+	    return $http.post("/login",data);
+	}
+
+	var storeUser = function(fn, ln, email, passwd)
+	{
+	    var data={
+		"firstName":fn,
+		"lastName":ln,
+		"email":email,
+		"password":passwd
+	    }
+	    return $http.post("/signup",data);
+	}
+
+	var requestQuestion = function()
+	{
+	    return $http.get("/question");
+	}
+
+	var checkAnswer = function(answer)
+	{
+	    return $http.post("/checkAnswer",answer);
+	}
+
+	//get the current quiz result for the report after taking one quiz
+	var getOneQuizResult = function()
+	{
+	    return $http.get("/thisQuizReport");
+	}
+
+	//get the results of all the quizzes for the viewReports page
+	var getQuizResults = function()
+	{
+	    return $http.get("/allQuizReports");
+	}
+
+	//get the specific quiz report after clicking the report link on the viewReports page
+	var getQuizResultWithId = function(quizID)
+	{
+	    return $http.get("/thisQuizReportWithId/"+quizID);
+	}
+
+	//get the question summary for teacherDashboard page
+	var getQuestionsSummary = function()
+	{
+	    return $http.get("/questionsSummary");
+	}
+
+	//get the student summary for teacherDashboard page
+	var getStudentsSummary = function()
+	{
+	    return $http.get("/studentsSummary");
+	}
+
+	return{
+	    login:confirmIdentity,
+	    signup:storeUser,
+	    getQuestion:requestQuestion,
+	    checkAnswer:checkAnswer,
+	    getThisQuizResult:getOneQuizResult,
+	    getAllQuizResults:getQuizResults,
+	    getQuizResultWithId:getQuizResultWithId,
+	    getQuestionsSummary:getQuestionsSummary,
+	    getStudentsSummary:getStudentsSummary
+	    
+	}
+    };
+
+    var setColorIconAvg = function(arrayInput, fieldInput)
+    {
+	var totalGrade = 0;
+	console.log(arrayInput);
+	arrayInput.forEach(function(element)
+			   {
+			       totalGrade += element[fieldInput];
+			       
+			       if (element[fieldInput] >= 90)
+			       {
+				   element.icon = "check.png";
+				   element.gradeColor = "greenColor";
+			       }
+			       else if (element[fieldInput] >= 60)
+			       {
+				   element.icon = "error.png";
+				   element.gradeColor = "blueColor";
+			       }
+			       else {
+				   element.icon = "cancel.png";
+				   element.gradeColor = "redColor";
+			       };
+			   });
+	return totalGrade / arrayInput.length;
+    }
+    
+//controller
+    var loginController = function($scope,$location,linuxQuizModel)
+    {
+	$scope.emailVal = "";
+	$scope.passwdVal = "";
+	$scope.warning = "";
+	$scope.visibility = true;
+	
+	$scope.signupButton = function()
+	{
+	    $location.path("signup");
+	};
+
+	$scope.loginButton = function()
+	{
+		console.log("login button pressed");
+	    linuxQuizModel.login($scope.emailVal,$scope.passwdVal).then(function(message)
+		  {
+			console.log("in linux quiz model");
+		      var response = message.data.message;
+		      console.log(response);
+		      if (response == true)
+		      {
+			  $scope.visibility = true;
+			  $location.path("dashboard");
+		      }
+		      else 
+		      {
+			  $scope.warning = "Email or password is invalid!";
+			  $scope.visibility = false;
+		      }
+		  });
+	};
+    }
+
+    var signupController = function($scope,$location,linuxQuizModel)
+    {
+	$scope.firstNameVal = "";
+	$scope.lastNameVal = "";
+	$scope.emailVal = "";
+	$scope.passwdVal = "";
+	$scope.rePasswdVal = "";
+	$scope.warning = "";
+	$scope.visibility = true;
+
+	$scope.submitButton = function()
+	{
+/*	    console.log("fn: ",$scope.firstNameVal);
+	    console.log("ln: ",$scope.lastNameVal);
+	    console.log("email: ",$scope.emailVal);
+	    console.log("passwdVal: ",$scope.passwdVal);
+	    console.log("rePasswdVal: ",$scope.rePasswdVal);
+*/
+	if ($scope.passwdVal != $scope.rePasswdVal)
+	{
+		$scope.warning = "ReEntered password is different!";
+		$scope.visibility = false;
+	}
+	else
+	{
+
+		$scope.visibility = true;
+		linuxQuizModel.signup($scope.firstNameVal, $scope.lastNameVal, $scope.emailVal, $scope.passwdVal)
+		.then(function(message)
+		{
+		    var response = message.data.message;
+		    if (response == true)
+		    {
+			$location.path("dashboard");
+		    }
+		    else
+		    {
+			$scope.warning = message.data.errorMessage;
+			$scope.visibility = false;
+		    }
+		})
+	    }
+	};
+    }
+
+    var dashboardController = function($scope,$location)
+    {
+	$scope.viewReportsButton = function()
+	{
+	    $location.path("viewReports");
+	};
+
+	$scope.startQuizButton = function()
+	{
+	    $location.path("quiz");
+	};
+    }
+
+    var quizController = function($scope,$location,linuxQuizModel,$route)
+    {
+	$scope.questionName = "";
+	$scope.description = "";
+	$scope.number = 0;
+	$scope.maxQuest = 0;
+	$scope.progress = "";
+	$scope.userAnswer = "";
+	$scope.readonly = false;
+	$scope.responseText="";
+	$scope.warnVisibility=true;
+	$scope.correctVisibility=true;
+	$scope.warnAnswer=true;
+	
+/*
+  testing code
+	$scope.questionName = "Question name";
+	$scope.description = "Question description";
+	$scope.number = 1;
+	$scope.maxQuest = 3;
+	$scope.progress = $scope.number/$scope.maxQuest*100+"%";
+*/
+
+	linuxQuizModel.getQuestion()
+	.then(function(message)
+	{
+	    var response = message.data;
+	    $scope.questionName = response.questionName;
+	    $scope.description = response.description;
+	    $scope.number=response.questNum;
+	    $scope.maxQuest=response.maxQuestNum;
+	    $scope.progress = $scope.number/$scope.maxQuest*100+"%";
+	});
+
+	$scope.keyPress=function(keyEvent){
+	    if(keyEvent.which === 13)
+	    {
+		$scope.readonly = true;
+		linuxQuizModel.checkAnswer($scope.userAnswer)
+		.then(function(message)
+		{
+		    response = message.data;		
+		    if(response.includes("correct")){
+			$scope.responseText=response;
+			$scope.correctVisibility=false;
+		    }
+		    else{
+			$scope.responseText=response;
+			$scope.warnVisibility=false;
+		    }				  
+		});
+	    }
+	}
+	
+	$scope.nextButton = function()
+	{
+	    if($scope.readonly){
+	    /*NEED DISCUSSION
+	    linuxQuizModel.checkAnswer($scope.userAnswer)
+	    .then(function(message)
+	    {
+		response = message.data;
+		
+	    });
+	    */
+		if ($scope.number != $scope.maxQuest)
+		{
+		    $route.reload();
+		}
+		else
+		{
+		    $location.path("report");
+		}
+	    }
+	    else
+	    {
+		$scope.warnAnswer=false;
+	    }
+	};
+    }
+
+    var quizReportController = function($scope,$location,linuxQuizModel)
+    {
+	$scope.grade = 0;
+	$scope.questions = [];
+
+/*
+	//testing
+	$scope.grade = 45;
+	$scope.questions = [
+	    {
+                "questionName":"Change Directory",
+                "description":"Change the directory from the current directory to the scapy",
+                "crtAnswer":"cd scapy",
+                "usrAnswer":"cd scapy",
+                "usrCorrect":true
+	    },
+	    {
+                "questionName":"List long form",
+                "description":"List out all of the items in your current directory in long form",
+                "crtAnswer":"ls -l",
+                "usrAnswer":"ls -l",
+                "usrCorrect":true
+	    },
+	    {
+                "questionName":"Make a directory",
+                "description":"Make a directory in your current directory called red",
+                "crtAnswer":"mkdir red",
+                "usrAnswer":"mkdr red",
+                "usrCorrect":false
+	    },
+	    {
+                "questionName":"Copy a file",
+                "description":"Copy the red.txt file to green.txt",
+                "crtAnswer":"cp red.txt green.txt",
+                "usrAnswer":"copy red.txt green.txt",
+                "usrCorrect":false
+	    }		    
+	]
+
+*/
+
+	linuxQuizModel.getThisQuizResult()
+	.then(function(message)
+	{
+	    var response = message.data;
+	    $scope.grade = response.grade;
+	    $scope.questions = response.questions;
+	});
+
+	$scope.retakeQuizButton = function()
+	{
+	    $location.path("quiz");
+	};
+
+	$scope.homeButton = function()
+	{
+	    $location.path("dashboard");
+	};
+    }
+
+    var viewReportsController = function($scope,$location,linuxQuizModel)
+    {
+	$scope.quizzes = [];
+	
+///*
+	//test
+	$scope.quizzes = [
+	    {
+		"_id":1,
+		"grade": 50,
+		"dateTaken":"4/20/2017"
+	    },
+	    {
+		"_id":2,
+		"grade": 75,
+		"dateTaken":"4/20/2017"
+	    }
+	]
+	
+	$scope.averageGrade = setColorIconAvg($scope.quizzes, "grade");
+//*/
+
+/*
+	linuxQuizModel.getAllQuizResults()
+	.then(function(message)
+ 	{
+
+	    var response = message.data;
+	    $scope.quizzes = response.quizzes;
+	    $scope.averageGrade = setColorIconAvg($scope.quizzes, "grade");
+	});
+*/
+	$scope.homeButton = function()
+	{
+	    $location.path("dashboard");
+	};
+    }
+
+    var quizReportWithIdController = function($scope,$location,$routeParams,linuxQuizModel)
+    {
+	$scope.grade = 0;
+	$scope.questions = [];
+	
+	linuxQuizModel.getQuizResultWithId($routeParams.reportId)
+	.then(function(message)
+	{
+	    var response = message.data;
+	    $scope.grade = response.grade;
+	    $scope.questions = response.questions;
+	});
+
+	$scope.retakeQuizButton = function()
+	{
+	    $location.path("quiz");
+	};
+
+	$scope.homeButton = function()
+	{
+	    $location.path("dashboard");
+	};
+    }
+
+    var teacherDashboardController = function($scope,$location,linuxQuizModel)
+    {
+	$scope.showClassTrends = false;
+	$scope.showStudentReports = true;
+
+	$scope.switchTabs1 = function()
+	{
+	    $scope.showClassTrends = false;
+	    $scope.showStudentReports = true;
+	};
+
+	$scope.switchTabs2 = function()
+	{
+	    $scope.showClassTrends = true;
+	    $scope.showStudentReports = false;
+	};
+
+	$scope.questions = [];
+
+
+
+/*
+
+	$scope.questions = [
+	    {
+		"questionName":"Change Directory",
+		"description":"Change the directory from the current directory to the ::directory::",
+		"crtAnswer":"cd ::directory::",
+		"crtRatio":37
+	    },
+            {
+		"questionName":"List long form",
+		"description":"List out all of the items in your current directory in long form",
+		"crtAnswer":"ls -l",
+		"crtRatio":78
+            },
+            {
+		"questionName":"Make a directory",
+		"description":"Make a directory in your current directory called ::directory::",
+		"crtAnswer":"mkdir ::directory::",
+		"crtRatio":83
+            }
+	];
+
+	setColorIconAvg($scope.questions, "crtRatio");
+*/
+	
+///*
+	linuxQuizModel.getQuestionsSummary()
+	.then(function(message)
+ 	{
+	    var response = message.data;
+	    $scope.questions = response.questions;
+	    console.log($scope.questions);
+	    setColorIconAvg($scope.questions, "crtRatio");
+	});
+//*/
+
+	
+
+	$scope.students = [];
+///*
+	$scope.students = [
+	    {
+		"_id":1,
+		"firstName":"Ross",
+    		"lastName":"Murrell",
+		"latestDate":"4/3/2017",
+		"averageGrade":82
+	    },
+	    {
+		"_id":2,
+		"firstName":"Minyi",
+    		"lastName":"Hu",
+		"latestDate":"4/4/2017",
+		"averageGrade":48
+	    },
+	    {
+		"_id":3,
+		"firstName":"Leyu",
+    		"lastName":"Fei",
+		"latestDate":"4/5/2017",
+		"averageGrade":91
+	    },
+	    {
+		"_id":4,
+		"firstName":"Alex",
+    		"lastName":"Luken",
+		"latestDate":"4/7/2017",
+		"averageGrade":55
+	    }
+	];
+
+	$scope.averageGrade = setColorIconAvg($scope.students, "averageGrade");
+//*/
+/*	
+	linuxQuizModel.getStudentsSummary()
+	.then(function(message)
+ 	{
+	    var response = message.data;
+	    $scope.students = response.questions;
+	    //$scope.averageGrade = setColorIconAvg($scope.students, "averageGrade");
+	});
+*/
+
+    }
+/*
+    var teacherViewGradeController = function($scope,$location,$routeParams,linuxQuizModel)
+    {
+	
+    }
+*/
+    var routingConfig = function($routeProvider)
+    {
+	$routeProvider
+	.when("/",
+	      {
+		  templateUrl:"login.html",
+		  controller:"loginController"
+	      })
+	.when("/signup",
+	      {
+		  templateUrl:"signup.html",
+		  controller:"signupController"
+	      })
+	.when("/dashboard",
+	      {
+		  templateUrl:"intro.html",
+		  controller:"dashboardController"
+	      })
+	.when("/quiz",
+	      {
+		  templateUrl:"quizDashboard.html",
+		  controller:"quizController"
+	      })
+	.when("/report",
+	      {
+		  templateUrl:"quizReport.html",
+		  controller:"quizReportController"
+	      })
+	.when("/viewReports",
+	      {
+		  templateUrl:"viewReports.html",
+		  controller:"viewReportsController"
+	      })
+	.when("/report/:reportId",
+	      {
+		  templateUrl:"quizReport.html",
+		  controller:"quizReportWithIdController"
+	      })
+	.when("/teacherDashboard",
+	      {
+		  templateUrl:"teacherDashboard.html",
+		  controller:"teacherDashboardController"
+	      })
+	.when("/studentGrades/:studentID",
+	      {
+		  templateUrl:"teacherStudentGrades.html",
+		  controller:"teacherViewGradeController"
+	      })
+	.otherwise({redirectTo:"/badlink"});
+    };
+
+    angular
+    .module("linuxQuiz")
+    .config(['$routeProvider',routingConfig])
+    .controller("loginController",loginController)
+    .controller("signupController",signupController)
+    .controller("dashboardController",dashboardController)
+    .controller("quizController",quizController)
+    .controller("quizReportController",quizReportController)
+    .controller("viewReportsController",viewReportsController)
+    .controller("quizReportWithIdController",quizReportWithIdController)
+    .controller("teacherDashboardController",teacherDashboardController)
+    .controller("teacherViewGradeController",teacherViewGradeController)
+    .service("linuxQuizModel", linuxQuizModel);
+
+})();

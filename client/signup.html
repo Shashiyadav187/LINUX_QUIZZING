@@ -1,0 +1,49 @@
+    <head>
+        <title>Linux Skills Quiz</title>
+    </head>
+
+        <!-- opaque white div centered vertically and horizontally -->
+        <div class="centeredBox">
+            
+	  <div class = "alert alert-danger" ng-hide="visibility">
+	    {{warning}}
+	  </div>
+
+            <!-- header for signing up -->
+            <h2>Create an Account</h2>
+
+            <!-- form to handle signing up -->
+            <form>
+                
+                <!-- first and last name image and first and 
+                    last name text field -->
+                <img class="textFieldImg" src="namePic.png">
+                <input id="firstNameInput" class="textFieldSmall" type="text" 
+                       name="firstName" placeholder="First Name" ng-model="firstNameVal">
+                <input id="lastNameInput" class="textFieldSmall" type="text" 
+                       name="lastName" placeholder="Last Name" ng-model="lastNameVal">
+                <br>
+                
+                <!-- username image and username text field -->
+                <img class="textFieldImg" src="emailPic.png">
+                <input id="emailInput" class="textField" type="text" 
+                       name="email" placeholder="Email" ng-model="emailVal">
+                <br>
+                
+                <!-- password image and password text field -->
+                <img class="textFieldImg" src="passwordPic.png">
+                <input id="passwordInput" class="textField" type="password" name="password" placeholder="Password" ng-model="passwdVal">
+                <br>
+                
+                <!-- reenter password image and reenter password text field -->
+                <img class="textFieldImg" src="passwordPic.png">
+                <input id="repasswordInput" class="textField" type="password"
+                       name="repassword" placeholder="Reenter Password" ng-model="rePasswdVal">
+                <br><br>
+            </form>
+            
+            <!-- button to submit sign up form -->
+            <button class="greenButton roundButton" style="float:right;" ng-click="submitButton()">Submit</button>
+	    
+        </div>
+	

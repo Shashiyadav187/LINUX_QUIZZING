@@ -1,0 +1,293 @@
+module.exports = function()
+{
+var Question = require('mongoose').model('Question');
+var students=require('mongoose').model('StudentsV4');
+var files1=["red.txt","blue.txt","pink.txt","green.txt","cyan.txt"];
+var files2=["light_red.txt","dark_blue.txt","light_pink.txt","dark_cyan.txt","yellow.txt"];
+var directories1=["koala","turtle","dragon","dog","tiger"];
+var directories2=["panda","greenstuff","imaginaryanimal","humanfriend","dangerous"];
+    
+    function shuffle(array) {
+	var currentIndex = array.length, temporaryValue, randomIndex;
+	
+	// While there remain elements to shuffle...
+	while (0 !== currentIndex) {
+	    
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+	    
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	}
+	
+	return array;
+    }
+
+
+var getQuestion = function(req, res,next){
+    var max=5;
+    var user=req.user;
+    students.find({email:user},function(err,student)
+		  {
+                      if (err)
+                      {
+                          return next(err);
+                      } else
+                      {
+                          var quizzes = student[0].quizzes;
+			  var quiz=quizzes[quizzes.length-1];
+			  var fin=quiz.finished;
+			  var allQuestions;
+			  var promise = Question.find({}).exec();
+			  promise.then(function(que)
+				{
+					allQuestions = que;
+					console.log("IN QUESTION PROMISE----------");
+					if (fin)
+					{
+						var idArray = [];
+						que.forEach(function(obj, index, array)
+						{
+							idArray.push(index);	
+						});
+						var shuffledQuestions = shuffle(idArray);
+                                                var newquiz={
+                                                                grade:-1,
+                                                                dateTaken:new Date(),
+                                                                finished:false,
+								questionID:shuffledQuestions,
+                                                                questions:[]
+                                                };
+						student[0].quizzes.push(newquiz);
+					}
+					return student[0].save();
+				})
+				.then(function(theStudent) {
+					console.log("in second then");
+					var stuQuizzes = theStudent.quizzes;
+					var curQuiz = stuQuizzes[stuQuizzes.length-1];
+					var qQuestions = curQuiz.questions;
+					var questionNum = qQuestions.length+1;
+					var questionIDs = curQuiz.questionID;
+					console.log(questionIDs);
+					var qID = questionIDs[questionNum-1];
+				        var question=allQuestions[qID];
+				        var name=question.description;
+				    //We assume that there are at most two files and two directories in each question
+				        var actualFile1=files1[Math.floor(Math.random() * files1.length)];
+				        var actualFile2=files2[Math.floor(Math.random() * files2.length)];
+				        var actualDirect1=directories1[Math.floor(Math.random() * directories1.length)];
+				        var actualDirect2=directories2[Math.floor(Math.random() * directories2.length)];
+				        var count=0;
+				        var actualName=name;
+				        var actualFiles=[];
+				        var actualDirectories=[];
+				        while(actualName.includes("::file::")){
+					    count++;
+				            if(count==1){
+						actualName=actualName.replace("::file::",actualFile1);
+						actualFiles.push(actualFile1);}
+					    else if(count==2){
+						actualName=actualName.replace("::file::",actualFile2);
+						actualFiles.push(actualFile2);
+						}
+					    }
+				         count=0;
+				         while(actualName.includes("::directory::")){
+					     
+					    count++;
+				            if(count==1){
+						actualName=actualName.replace("::directory::",actualDirect1);
+						actualDirectories.push(actualDirect1);}
+					    else if(count==2){
+						actualName=actualName.replace("::directory::",actualDirect2);
+						actualDirectories.push(actualDirect2)
+						}
+					     }
+				        //need to change in check Answer
+					var storedQues={
+					    questionName:question.questionName,
+					    description:question.description,
+					    actualDescription:actualName,
+					    files:actualFiles,
+					    directories:actualDirectories,
+					    crtAnswer:question.crtAnswer,
+					    usrAnswer:"",
+					    usrCorrect:false
+					    }
+					student[0].quizzes[quizzes.length-1].questions.push(storedQues);
+				        return student[0].save();
+					/*res.json({
+					questionName:question.questionName,
+					description:actualName,
+					questNum:questionNum,
+					maxQuestNum:max
+					});*/
+				}).then(function(tStudent){
+				    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+				    var tquizzes=tStudent.quizzes;
+				    var tquestions=tStudent.quizzes[tquizzes.length-1].questions;
+				    console.log(tquestions[tquestions.length-1]);
+				    console.log(max);
+				    res.json({
+					questionName:tquestions[tquestions.length-1].questionName,
+					description:tquestions[tquestions.length-1].actualDescription,
+					questNum:tquestions.length,
+					maxQuestNum:max
+					});
+				});
+
+
+			      }
+
+                      });
+		      
+		  
+    //res.json({});
+};
+
+var addQuestion = function(req,res,next)
+{
+    var ques=new Question(req.body);
+    ques.save(function(err)
+	      {
+		  if(err)
+		      {
+			  return next(err);
+			  }
+		  else
+		     {
+			 res.json(req.body);
+		     }
+		  });
+};
+
+
+var addStudent = function(req,res,next)
+	     {
+		 var stu = new students(req.body);
+		 console.log(req.body);
+		 stu.save(function(err)
+			  {
+			      if(err)
+			      {
+				  return next(err);
+			      }
+			      else
+			      {
+				  res.json(stu);
+			      }
+			  });
+	     };
+
+
+var getStuQuizReports = function(req,res,next)
+    {
+	var user=req.user;
+	console.log(req.user);
+	students.find({email:user},function(err,student)
+		 {
+		     if(err)
+		     {
+			 return next(err);
+		     } else
+		     {
+			var quizes = student[0].quizzes;
+			if (quizes[quizes.length-1].finished == false)
+			{
+				quizes.pop();
+			}
+			 res.json({quizzes:quizes});
+		     }
+		 });
+	};
+	
+
+
+
+
+var getCurrentReport = function(req,res,next)
+{
+	var user=req.user;
+	students.find({email:user},function(err,student)
+	{
+		if (err)
+		{
+			return next(err);
+		} else
+		{
+			var quizzes = student[0].quizzes;
+			var val=1;
+			if (quizzes[quizzes.length-1].finished == false)
+			{
+				val = 2;
+			}
+			var questionsData = quizzes[quizzes.length-val].questions;
+			var gradeData = quizzes[quizzes.length-val].grade;
+			res.json({
+				grade: gradeData,
+				questions: questionsData
+			});
+
+		}
+
+	});
+};
+
+
+function search(nameKey, myArray){
+    for (var i=0; i < myArray.length; i++) {
+        if (myArray[i]._id == nameKey) {
+            return myArray[i];
+        }
+    }
+}
+
+
+
+
+
+var getReportById = function(req,res,next)
+{
+	var resultID = req.params.resultID;
+	var user=req.user;
+        students.find({email:user},function(err,student)
+        {
+                if (err)
+                {
+                        return next(err);
+                } else
+                {
+                        var quizzes = student[0].quizzes;
+			var obj = search(resultID, quizzes);
+                        var questionsData = obj.questions;
+                        var gradeData = obj.grade;
+                        res.json({
+                                grade: gradeData,
+                                questions: questionsData
+                        });
+                }
+
+        });
+
+};
+
+
+    
+
+
+
+    return {
+	getQuestion:getQuestion,
+	addQuestion:addQuestion,
+	getStuQuizReports:getStuQuizReports,
+	addStudent:addStudent,
+	getCurrentReport:getCurrentReport,
+	getReportById:getReportById
+	}
+
+
+}
